@@ -1438,7 +1438,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
                 chat_id=AUTH_CHANNEL,
                 file_id=file_id,
                 caption=script.CHANNEL_CAP.format(query.from_user.mention, title, query.message.chat.title),
-                protect_content=True if ident == "filep" else False 
+ #               protect_content=True if ident == "filep" else False 
                 reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("📢 Channel", url=f'https://t.me/TownBus'),  # we download Link
                                                     InlineKeyboardButton('📽️ Group', url=f'https://t.me/Moviediscussion24x7')]])  # web stream Link
             )
