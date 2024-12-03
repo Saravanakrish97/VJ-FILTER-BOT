@@ -1383,7 +1383,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
             else:
                 if clicked == typed:
                     file_send = await client.send_cached_media(
-                        chat_id=FILE_CHANNEL,
+                        chat_id=FILE_FORWARD,
                         file_id=file_id,
                         caption=script.CHANNEL_CAP.format(query.from_user.mention, title, query.message.chat.title),
                         protect_content=True if ident == "filep" else False,
@@ -1435,7 +1435,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
                 
         try:
             msg_txt = await client.send_cached_media(
-                chat_id=AUTH_CHANNEL,
+                chat_id=FILE_FORWARD,
                 file_id=file_id,
                 caption=script.CHANNEL_CAP.format(query.from_user.mention, title, query.message.chat.title),
                 protect_content=True if ident == "filep" else False,
@@ -1512,7 +1512,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
 #New lines added for redirect to channel
         try:
             msg_txt = await client.send_cached_media(
-                chat_id=AUTH_CHANNEL,
+                chat_id=FILE_FORWARD,
                 file_id=file_id,
                 caption=script.CHANNEL_CAP.format(query.from_user.mention, title, query.message.chat.title),
                 protect_content=True if ident == "filep" else False, 
