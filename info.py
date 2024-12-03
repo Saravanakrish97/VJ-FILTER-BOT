@@ -52,7 +52,7 @@ ADMIN_GROUP_ID = int(environ.get('ADMIN_GROUP_ID', '-1002102220397'))
 
 #Redirect to Channel
 #Must change this link to work redirect (FILE_FORWORD)
-FILE_FORWARD = environ.get('FILE_FORWARD', "tamil5k")
+FILE_FORWARD = environ.get('FILE_FORWARD', '-1002143098613')
 FILE_CHANNEL = int(environ.get('FILE_CHANNEL', 0))
 
 # MongoDB information
