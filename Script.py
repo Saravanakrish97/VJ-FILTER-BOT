@@ -62,7 +62,7 @@ Hᴇʀᴇ Is Tʜᴇ Hᴇʟᴘ Fᴏʀ Mʏ Cᴏᴍᴍᴀɴᴅs.</b>"""
 
 » ʜᴇʀᴇ ɪs ᴍʏ sᴏᴜʀᴄᴇ ᴄᴏᴅᴇ : <a href='https://t.me/Saravanakrish/107'>ɢɪᴛʜᴜʙ</a>
 
-» <a href='https://t.me/TamilMovies5k'>📣 Mᴀɪɴ ᴄʜᴀɴɴᴇʟ</a>
+» <a href='https://t.me/MoviesMonster'>📣 Mᴀɪɴ ᴄʜᴀɴɴᴇʟ</a>
 » <a href='https://t.me/Moviediscussion24x7'>🎥 Mᴏᴠɪᴇ Rᴇǫᴜᴇsᴛ Gʀᴏᴜᴘ</a>
 » <a href='https://t.me/TamilSupport'>👨‍💻 sᴜᴘᴘᴏʀᴛ ᴄʜᴀᴛ</a>
 
@@ -330,7 +330,7 @@ Nᴀᴍᴇ - {}"""
  ▰▱▰▱▰▱▰▱▰▱▰▱▰▱ 
 
 ⏤͟͞➪ Gʀᴏᴜᴘ : @MoviesDiscussion24x7 
-⏤͟͞➪ Main Cʜᴀɴɴᴇʟ : @Tamilmovies5k
+⏤͟͞➪ Main Cʜᴀɴɴᴇʟ : @MoviesMonster
 
 ▰▱▰▱▰▱▰▱▰▱▰▱▰▱ 
 🎗️ʝσιи 🎗️ ѕнαяє🎗️ ѕυρρσят🎗️ 
