@@ -85,22 +85,7 @@ async def start(client, message):
             parse_mode=enums.ParseMode.HTML
         )
         return
-    
- #   if AUTH_CHANNEL and not await is_subscribed(client, message):
- #       try:
- #           invite_link = await client.create_chat_invite_link(int(AUTH_CHANNEL))
- #       except ChatAdminRequired:
- #           logger.error("Make sure Bot is admin in Forcesub channel")
- #           return
- #       btn = [
- #           [
- #               InlineKeyboardButton("🍿ᴊᴏɪɴ ᴏᴜʀ ʙᴀᴄᴋ-ᴜᴘ ᴄʜᴀɴɴᴇʟ🍿", url=invite_link.invite_link)
- #           ],[
- #               InlineKeyboardButton('🤔 Why Iam Join🤔', callback_data='sinfo')
- #           ]
- #       ]
-
-
+        
     invite_links = await is_subscribed(client, query=message)
     if AUTH_CHANNEL and len(invite_links) >= 1:
         #this is written by tg: @programcrasher
@@ -117,9 +102,11 @@ async def start(client, message):
             btn.append([
                 InlineKeyboardButton(f"❆ Jᴏɪɴ {channel_num} Cʜᴀɴɴᴇʟ ❆", url=link)
             ])
+            
         if message.command[1] != "subscribe":
             try:
                 kk, file_id = message.command[1].split("_", 1)
+                pre = 'checksubp' if kk == 'filep' else 'checksub' 
                 btn.append([InlineKeyboardButton("↻ Tʀʏ Aɢᴀɪɴ", callback_data=f"checksub#{kk}#{file_id}")])
             except (IndexError, ValueError):
                 btn.append([InlineKeyboardButton("↻ Tʀʏ Aɢᴀɪɴ", url=f"https://t.me/{temp.U_NAME}?start={message.command[1]}")])
