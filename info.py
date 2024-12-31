@@ -1,8 +1,9 @@
 # Don't Remove Credit @tamilBots
 # Subscribe YouTube Channel For Amazing Bot @TamilBots
 # Ask Doubt on telegram @TamilSupport
-# tamil movies5k id -1001980408095
+# tamil movies6k id -1002457623363
 #Townbus id -1001675270280
+#TamilBots id - 1001359080430
 
 import re
 from os import environ,getenv
@@ -39,7 +40,7 @@ auth_users = [int(user) if id_pattern.search(user) else user for user in environ
 AUTH_USERS = (auth_users + ADMINS) if auth_users else []
 auth_channel = environ.get('AUTH_CHANNEL')
 auth_grp = environ.get('AUTH_GROUP')
-AUTH_CHANNEL = [int(auth_channel) for auth_channel in environ.get('AUTH_CHANNEL', '-1002352846671 -1001675270280').split() if id_pattern.search(auth_channel)]
+AUTH_CHANNEL = [int(auth_channel) for auth_channel in environ.get('AUTH_CHANNEL', '-1002352846671 -1001675270280 -1001359080430').split() if id_pattern.search(auth_channel)]
 AUTH_GROUPS = [int(ch) for ch in auth_grp.split()] if auth_grp else None
 support_chat_id = environ.get('SUPPORT_CHAT_ID', '')
 reqst_channel = environ.get('REQST_CHANNEL_ID', '-1002062053288')
