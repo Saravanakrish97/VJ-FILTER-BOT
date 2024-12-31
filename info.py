@@ -78,7 +78,7 @@ PUBLIC_FILE_CHANNEL = environ.get('PUBLIC_FILE_CHANNEL', 'vendru') # Public Chan
 
 # Links
 GRP_LNK = environ.get('GRP_LNK', 'https://t.me/MovieDiscussion24x7')
-CHNL_LNK = environ.get('CHNL_LNK', 'https://t.me/TamilMovies5k')
+CHNL_LNK = environ.get('CHNL_LNK', 'https://t.me/TamilMovies6k')
 TUTORIAL = environ.get('TUTORIAL', 'https://t.me/tamilmoviechat/28')
 VERIFY_TUTORIAL = environ.get('VERIFY_TUTORIAL', 'https://t.me/tamilmoviechat/28')
 SUPPORT_CHAT = environ.get('SUPPORT_CHAT', 'TamilSupport') # Support Chat Link Without https:// or @
