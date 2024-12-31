@@ -86,20 +86,37 @@ async def start(client, message):
         )
         return
     
-    if AUTH_CHANNEL and not await is_subscribed(client, message):
-        try:
-            invite_link = await client.create_chat_invite_link(int(AUTH_CHANNEL))
-        except ChatAdminRequired:
-            logger.error("Make sure Bot is admin in Forcesub channel")
-            return
-        btn = [
-            [
-                InlineKeyboardButton("🍿ᴊᴏɪɴ ᴏᴜʀ ʙᴀᴄᴋ-ᴜᴘ ᴄʜᴀɴɴᴇʟ🍿", url=invite_link.invite_link)
-            ],[
-                InlineKeyboardButton('🤔 Why Iam Join🤔', callback_data='sinfo')
-            ]
-        ]
+ #   if AUTH_CHANNEL and not await is_subscribed(client, message):
+ #       try:
+ #           invite_link = await client.create_chat_invite_link(int(AUTH_CHANNEL))
+ #       except ChatAdminRequired:
+ #           logger.error("Make sure Bot is admin in Forcesub channel")
+ #           return
+ #       btn = [
+ #           [
+ #               InlineKeyboardButton("🍿ᴊᴏɪɴ ᴏᴜʀ ʙᴀᴄᴋ-ᴜᴘ ᴄʜᴀɴɴᴇʟ🍿", url=invite_link.invite_link)
+ #           ],[
+ #               InlineKeyboardButton('🤔 Why Iam Join🤔', callback_data='sinfo')
+ #           ]
+ #       ]
 
+
+    invite_links = await is_subscribed(client, query=message)
+    if AUTH_CHANNEL and len(invite_links) >= 1:
+        #this is written by tg: @programcrasher
+        btn = []
+        for chnl_num, link in enumerate(invite_links, start=1):
+            if chnl_num == 1:
+                channel_num = "1sᴛ"
+            elif chnl_num == 2:
+                channel_num = "2ɴᴅ"
+            elif chnl_num == 3:
+                channel_num = "3ʀᴅ"
+            else:
+                channel_num = str(chnl_num)+"ᴛʜ"
+            btn.append([
+                InlineKeyboardButton(f"❆ Jᴏɪɴ {channel_num} Cʜᴀɴɴᴇʟ ❆", url=link)
+            ])
         if message.command[1] != "subscribe":
             try:
                 kk, file_id = message.command[1].split("_", 1)
