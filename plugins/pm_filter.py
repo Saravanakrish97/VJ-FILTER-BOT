@@ -1370,7 +1370,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
                         await query.answer(url=f"https://telegram.me/{temp.U_NAME}?start=short_{file_id}")
                         return
                     else:
-                        await query.answer(f"Hᴇʏ {query.from_user.first_name}, Tʜɪs Is Nᴏᴛ Yᴏᴜʀ Mᴏᴠɪᴇ Rᴇǫᴜᴇsᴛ. Rᴇǫᴜᴇsᴛ Yᴏᴜʀ's !\n⚠️ வணக்கம், இது உங்கள் கோரிக்கை அல்ல, உங்கள் கோரிக்கையை கோருங்கள்"", show_alert=True)
+                        await query.answer(f"Hᴇʏ {query.from_user.first_name}, Tʜɪs Is Nᴏᴛ Yᴏᴜʀ Mᴏᴠɪᴇ Rᴇǫᴜᴇsᴛ. Rᴇǫᴜᴇsᴛ Yᴏᴜʀ's !⚠️ வணக்கம், இது உங்கள் கோரிக்கை அல்ல, உங்கள் கோரிக்கையை கோருங்கள்", show_alert=True)
                 else:
                     await query.answer(url=f"https://telegram.me/{temp.U_NAME}?start={ident}_{file_id}")
 #            elif settings['is_shortlink'] and await db.has_premium_access(query.from_user.id):
@@ -1378,7 +1378,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
 #                    await query.answer(url=f"https://telegram.me/{temp.U_NAME}?start={ident}_{file_id}")
 #                    return
 #                else:
-#                    await query.answer(f"Hᴇʏ {query.from_user.first_name}, Tʜɪs Is Nᴏᴛ Yᴏᴜʀ Mᴏᴠɪᴇ Rᴇǫᴜᴇsᴛ. Rᴇǫᴜᴇsᴛ Yᴏᴜʀ's !\n⚠️ வணக்கம், இது உங்கள் கோரிக்கை அல்ல, உங்கள் கோரிக்கையை கோருங்கள்"", show_alert=True)
+#                    await query.answer(f"Hᴇʏ {query.from_user.first_name}, Tʜɪs Is Nᴏᴛ Yᴏᴜʀ Mᴏᴠɪᴇ Rᴇǫᴜᴇsᴛ. Rᴇǫᴜᴇsᴛ Yᴏᴜʀ's !⚠️ வணக்கம், இது உங்கள் கோரிக்கை அல்ல, உங்கள் கோரிக்கையை கோருங்கள்", show_alert=True)
                     
             else:
                 if clicked == typed:
