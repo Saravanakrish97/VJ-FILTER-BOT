@@ -1426,14 +1426,42 @@ async def cb_handler(client: Client, query: CallbackQuery):
         pre = 'allfilesp' if settings['file_secure'] else 'allfiles'
         try:
             if settings['is_shortlink'] and not await db.has_premium_access(query.from_user.id):
-                await query.answer(url=f"https://telegram.me/{temp.U_NAME}?start=sendfiles1_{key}")
-            elif settings['is_shortlink'] and await db.has_premium_access(query.from_user.id):
-                await query.answer(url=f"https://telegram.me/{temp.U_NAME}?start={pre}_{key}")
-                return 
+  #              await query.answer(url=f"https://telegram.me/{temp.U_NAME}?start=sendfiles1_{key}")
+  #          elif settings['is_shortlink'] and await db.has_premium_access(query.from_user.id):
+  #              await query.answer(url=f"https://telegram.me/{temp.U_NAME}?start={pre}_{key}")
+  #              return 
+  #          else:
+  #              await query.answer(url=f"https://telegram.me/{temp.U_NAME}?start={pre}_{key}")
+                file_snd = await client.send_cached_media(
+                    chat_id=FILE_FORWARD,
+                    file_id=file_id,
+                    caption=script.CHANNEL_CAP.format(query.from_user.mention, title, query.message.chat.title),
+                    protect_content=True if ident == "filep" else False,
+                    reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("📢 Channel", url=CHNL_LNK),  # we download Link
+                                                        InlineKeyboardButton('📽️ Group', url=GRP_LNK)]])  # web stream Link
+                )
+                Joel_tx = await query.message.reply_text(
+                    text=script.FILE_MSG.format(query.from_user.mention, title, size),
+                    parse_mode=enums.ParseMode.HTML,
+                    reply_markup=InlineKeyboardMarkup(
+                        [
+                            [
+                                InlineKeyboardButton('📥 𝖣𝗈𝗐𝗇𝗅𝗈𝖺𝖽 𝖫𝗂𝗇𝗄 📥 ', url=file_send.link)
+                            ], [
+                            InlineKeyboardButton("⚠️ 𝖢𝖺𝗇'𝗍 𝖠𝖼𝖼𝖾𝗌𝗌 ❓ 𝖢𝗅𝗂𝖼𝗄 𝖧𝖾𝗋𝖾 ⚠️", url=f'https://t.me/Tamil5k')
+                        ]
+                        ]
+                    )
+                )
+                if settings['auto_delete']:
+                    await asyncio.sleep(600)
+                    await Joel_tx.delete()
+                    await file_snd.delete()
             else:
-                await query.answer(url=f"https://telegram.me/{temp.U_NAME}?start={pre}_{key}")
-
-        
+                await query.answer(
+                    f"Hᴇʏ {query.from_user.first_name}, Tʜɪs Is Nᴏᴛ Yᴏᴜʀ Mᴏᴠɪᴇ Rᴇǫᴜᴇsᴛ. Rᴇǫᴜᴇsᴛ Yᴏᴜʀ's !\n⚠️ வணக்கம், இது உங்கள் கோரிக்கை அல்ல, உங்கள் கோரிக்கையை கோருங்கள்",
+                    show_alert=True)
+            await query.answer('Cʜᴇᴄᴋ, I ʜᴀᴠᴇ sᴇɴᴛ ғɪʟᴇs', show_alert=True)
         except UserIsBlocked:
             await query.answer('𝐔𝐧𝐛𝐥𝐨𝐜𝐤 𝐭𝐡𝐞 𝐛𝐨𝐭 𝐦𝐚𝐡𝐧 !', show_alert=True)
         except PeerIdInvalid:
