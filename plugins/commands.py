@@ -113,7 +113,7 @@ async def start(client, message):
         await client.send_photo(
             chat_id=message.from_user.id,
             photo="https://telegra.ph/file/20b4aaaddb8aba646e53c.jpg",
-            caption="**You are not in our channel given below so you don't get the movie file...\n\nIf you want the movie file, click on the '🍿ᴊᴏɪɴ ᴏᴜʀ ʙᴀᴄᴋ-ᴜᴘ ᴄʜᴀɴɴᴇʟ🍿' button below and join our back-up channel, then click on the '🔄 Try Again' button below...\n\nThen you will get the movie files...**\n\nகீழே கொடுக்கப்பட்டுள்ள எங்கள் சேனலில் நீங்கள் இல்லை, அதனால் உங்களுக்கு திரைப்படம் கிடைக்கவில்லை...\n\nஉங்களுக்கு திரைப்படம் வேண்டுமென்றால், '🍿ᴊᴏɪɴ ᴏᴜʀ ʙᴀᴄᴋ-ᴜᴘ ᴄʜᴀɴɴᴇʟ🍿' என்பதைக் கிளிக் செய்து, எங்கள் சேனலில் சேரவும். பின்னர் கீழே உள்ள '🔄 Try Again' என்ற பட்டனை கிளிக் செய்து திரைப்படத்தைப் பெறுங்கள்...**",
+            caption="<b>**You are not in our channel given below so you don't get the movie file...\n\nIf you want the movie file, click on the '🍿ᴊᴏɪɴ ᴏᴜʀ ʙᴀᴄᴋ-ᴜᴘ ᴄʜᴀɴɴᴇʟ🍿' button below and join our back-up channel, then click on the '🔄 Try Again' button below...\n\nThen you will get the movie files...**\n\nகீழே கொடுக்கப்பட்டுள்ள எங்கள் சேனலில் நீங்கள் இல்லை, அதனால் உங்களுக்கு திரைப்படம் கிடைக்கவில்லை...\n\nஉங்களுக்கு திரைப்படம் வேண்டுமென்றால், '🍿ᴊᴏɪɴ ᴏᴜʀ ʙᴀᴄᴋ-ᴜᴘ ᴄʜᴀɴɴᴇʟ🍿' என்பதைக் கிளிக் செய்து, எங்கள் சேனலில் சேரவும். பின்னர் கீழே உள்ள '🔄 Try Again' என்ற பட்டனை கிளிக் செய்து திரைப்படத்தைப் பெறுங்கள்...**</b>",
             reply_markup=InlineKeyboardMarkup(btn),
             parse_mode=enums.ParseMode.MARKDOWN
             )
