@@ -8,7 +8,7 @@
 ![Typing SVG](https://readme-typing-svg.herokuapp.com/?lines=Welcome+To+Tamil+auto+Filter+Bot!)
 </p>
 
-## Main Feature 
+### Main Feature 
 <b>
   
 - [x] Premium Plan Feature 
