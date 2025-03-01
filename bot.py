@@ -2,7 +2,13 @@
 # Subscribe YouTube Channel For Amazing Bot @TamilBots
 # Ask Doubt on telegram @TamilSupport
 
-import sys, glob, importlib, logging, logging.config, pytz, asyncio
+import sys
+import glob
+import importlib
+import logging
+import logging.config
+import pytz
+import asyncio
 from pathlib import Path
 
 # Get logging configurations
@@ -35,15 +41,13 @@ from TechVJ.bot.clients import initialize_clients
 
 ppath = "plugins/*.py"
 files = glob.glob(ppath)
-TamilBot.start()
-loop = asyncio.get_event_loop()
-
 
 async def start():
     print('\n')
-    print('Initalizing Your Bot')
+    print('Initializing Your Bot')
     bot_info = await TamilBot.get_me()
     await initialize_clients()
+    
     for name in files:
         with open(name) as a:
             patt = Path(a.name)
@@ -55,37 +59,50 @@ async def start():
             spec.loader.exec_module(load)
             sys.modules["plugins." + plugin_name] = load
             print("TamilBots Imported => " + plugin_name)
+    
     if ON_HEROKU:
         asyncio.create_task(ping_server())
+    
     b_users, b_chats = await db.get_banned()
     temp.BANNED_USERS = b_users
     temp.BANNED_CHATS = b_chats
     await Media.ensure_indexes()
+    
     me = await TamilBot.get_me()
     temp.BOT = TamilBot
     temp.ME = me.id
     temp.U_NAME = me.username
     temp.B_NAME = me.first_name
+    
     logging.info(LOG_STR)
     logging.info(script.LOGO)
+    
     tz = pytz.timezone('Asia/Kolkata')
     today = date.today()
     now = datetime.now(tz)
     time = now.strftime("%H:%M:%S %p")
+    
     await TamilBot.send_message(chat_id=LOG_CHANNEL, text=script.RESTART_TXT.format(today, time))
-    if CLONE_MODE == True:
+    
+    if CLONE_MODE:
         print("Restarting All Clone Bots.......")
         await restart_bots()
         print("Restarted All Clone Bots.")
+    
     app = web.AppRunner(await web_server())
     await app.setup()
     bind_address = "0.0.0.0"
     await web.TCPSite(app, bind_address, PORT).start()
     await idle()
 
-
 if __name__ == '__main__':
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     try:
         loop.run_until_complete(start())
     except KeyboardInterrupt:
         logging.info('Service Stopped Bye 👋')
+    except Exception as e:
+        logging.error(f"An error occurred: {e}")
+    finally:
+        loop.run_until_complete(TamilBot.stop())  # Ensure the bot stops gracefully
