@@ -1,7 +1,3 @@
-# Don't Remove Credit @tamilBots
-# Subscribe YouTube Channel For Amazing Bot @TamilBots
-# Ask Doubt on telegram @TamilSupport
-
 import sys
 import glob
 import importlib
@@ -45,6 +41,7 @@ files = glob.glob(ppath)
 async def start():
     print('\n')
     print('Initializing Your Bot')
+    await TamilBot.start()  # Ensure the bot is started
     bot_info = await TamilBot.get_me()
     await initialize_clients()
     
@@ -105,4 +102,5 @@ if __name__ == '__main__':
     except Exception as e:
         logging.error(f"An error occurred: {e}")
     finally:
-        loop.run_until_complete(TamilBot.stop())  # Ensure the bot stops gracefully
+        if TamilBot.is_running:  # Check if the bot is running before stopping
+            loop.run_until_complete(TamilBot.stop())  # Ensure the bot stops gracefully
