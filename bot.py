@@ -93,14 +93,7 @@ async def start():
     await idle()
 
 if __name__ == '__main__':
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
     try:
         loop.run_until_complete(start())
     except KeyboardInterrupt:
         logging.info('Service Stopped Bye 👋')
-    except Exception as e:
-        logging.error(f"An error occurred: {e}")
-    finally:
-        if TamilBot.is_running:  # Check if the bot is running before stopping
-            loop.run_until_complete(TamilBot.stop())  # Ensure the bot stops gracefully
