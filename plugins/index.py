@@ -52,7 +52,6 @@ async def index_files(bot, query):
         chat = chat
     await index_files_to_db(int(lst_msg_id), chat, msg, bot)
 
-
 @Client.on_message(filters.private & filters.command('index'))
 async def send_for_index(bot, message):
     sk = await bot.ask(message.chat.id, "**Now Send Me Your Channel Last Post Link Or Forward A Last Message From Your Index Channel.**")
