@@ -1515,9 +1515,23 @@ async def cb_handler(client: Client, query: CallbackQuery):
                 chat_id=FILE_FORWARD,
                 file_id=file_id,
                 caption=f_caption,
-                protect_content=True,  # Adjust as needed
+                protect_content=True if ident == "filep" else False,  # Adjust as needed
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("📢 Channel", url=CHNL_LNK),  # we download Link
+                                                    InlineKeyboardButton('📽️ Group', url=GRP_LNK)]])  # web stream Link
             )
-
+            Joel_tgx = await query.message.reply_text(
+                text=script.FILE_MSG.format(query.from_user.mention, title, size),
+                parse_mode=enums.ParseMode.HTML,
+                reply_markup=InlineKeyboardMarkup(
+                    [
+                        [
+                            InlineKeyboardButton('📥 𝖣𝗈𝗐𝗇𝗅𝗈𝖺𝖽 𝖫𝗂𝗇𝗄 📥 ', url=file_send.link)
+                        ], [
+                        InlineKeyboardButton("⚠️ 𝖢𝖺𝗇'𝗍 𝖠𝖼𝖼𝖾𝗌𝗌 ❓ 𝖢𝗅𝗂𝖼𝗄 𝖧𝖾𝗋𝖾 ⚠️", url=f'https://t.me/Tamil5k')
+                    ]
+                    ]
+                )
+            )
             # Notify the user in the group chat
             await query.answer('File has been sent to the channel.', show_alert=True)
 
