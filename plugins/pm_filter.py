@@ -3013,7 +3013,8 @@ async def auto_filter(client, msg, spoll=False):
         m=await message.reply_text(f"<b><i> 𝖲𝖾𝖺𝗋𝖼𝗁𝗂𝗇𝗀 𝖿𝗈𝗋 '{search}' 🔎</i></b>")
         settings = await get_settings(message.chat.id)
         await msg.message.delete()
-    pre = 'filep' if settings['file_secure'] else 'file'
+    # pre = 'filep' if settings['file_secure'] else 'file'
+    pre = 'file'
     key = f"{message.chat.id}-{message.id}"
     FRESH[key] = search
     temp.GETALL[key] = files
@@ -3223,7 +3224,8 @@ async def ai_auto_filter(client, vj_search, msg, m, spoll=False):
         search, files, offset, total_results = spoll
         settings = await get_settings(message.chat.id)
         await msg.message.delete()
-    pre = 'filep' if settings['file_secure'] else 'file'
+ #   pre = 'filep' if settings['file_secure'] else 'file'
+    pre = 'file'
     key = f"{message.chat.id}-{message.id}"
     FRESH[key] = search
     temp.GETALL[key] = files
