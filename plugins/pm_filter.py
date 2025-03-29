@@ -146,7 +146,8 @@ async def next_page(bot, query):
     temp.GETALL[key] = files
     temp.SHORT[query.from_user.id] = query.message.chat.id
     settings = await get_settings(query.message.chat.id)
-    pre = 'filep' if settings['file_secure'] else 'file'
+ #   pre = 'filep' if settings['file_secure'] else 'file'
+    pre = 'file'
     if settings['button']:
         btn = [
             [
@@ -372,7 +373,9 @@ async def filter_yearss_cb_handler(client: Client, query: CallbackQuery):
         return
     temp.GETALL[key] = files
     settings = await get_settings(message.chat.id)
-    pre = 'filep' if settings['file_secure'] else 'file'
+  #  pre = 'filep' if settings['file_secure'] else 'file'
+    pre = 'file'
+
     if settings["button"]:
         btn = [
             [
@@ -528,7 +531,9 @@ async def filter_episodes_cb_handler(client: Client, query: CallbackQuery):
         return
     temp.GETALL[key] = files
     settings = await get_settings(message.chat.id)
-    pre = 'filep' if settings['file_secure'] else 'file'
+  #  pre = 'filep' if settings['file_secure'] else 'file'
+    pre = 'file'
+    
     if settings["button"]:
         btn = [
             [
@@ -682,7 +687,8 @@ async def filter_languages_cb_handler(client: Client, query: CallbackQuery):
         return
     temp.GETALL[key] = files
     settings = await get_settings(message.chat.id)
-    pre = 'filep' if settings['file_secure'] else 'file'
+#    pre = 'filep' if settings['file_secure'] else 'file'
+    pre = 'file'
     if settings["button"]:
         btn = [
             [
@@ -865,7 +871,8 @@ async def filter_seasons_cb_handler(client: Client, query: CallbackQuery):
         return
     temp.GETALL[key] = files
     settings = await get_settings(message.chat.id)
-    pre = 'filep' if settings['file_secure'] else 'file'
+  #  pre = 'filep' if settings['file_secure'] else 'file'
+    pre = 'file'
     if settings["button"]:
         btn = [
             [
@@ -994,7 +1001,8 @@ async def filter_qualities_cb_handler(client: Client, query: CallbackQuery):
         return
     temp.GETALL[key] = files
     settings = await get_settings(message.chat.id)
-    pre = 'filep' if settings['file_secure'] else 'file'
+#    pre = 'filep' if settings['file_secure'] else 'file'
+    pre = 'file'
     if settings["button"]:
         btn = [
             [
