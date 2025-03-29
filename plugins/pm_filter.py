@@ -1394,7 +1394,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
                         chat_id=FILE_FORWARD,
                         file_id=file_id,
                         caption=script.CHANNEL_CAP.format(query.from_user.mention, title, query.message.chat.title),
-                        protect_content=True if ident == "filep" else False,
+                  #      protect_content=True if ident == "filep" else False,
                         reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("📢 Channel", url=CHNL_LNK),  # we download Link
                                                             InlineKeyboardButton('📽️ Group', url=GRP_LNK)]])  # web stream Link
                     )
@@ -1523,7 +1523,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
                 chat_id=FILE_FORWARD,
                 file_id=file_id,
                 caption=f_caption,
-                protect_content=True if ident == "filep" else False,  # Adjust as needed
+         #       protect_content=True if ident == "filep" else False,  # Adjust as needed
                 reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("📢 Channel", url=CHNL_LNK),  # we download Link
                                                     InlineKeyboardButton('📽️ Group', url=GRP_LNK)]])  # web stream Link
             )
