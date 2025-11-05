@@ -554,7 +554,7 @@ async def start(client, message):
                     InlineKeyboardButton('🎭 Mᴏᴠɪᴇ Gʀᴏᴜᴘ', url=GRP_LNK)
                 ]]
             msg = await client.send_cached_media(
-                chat_id=message.from_user.id,
+                chat_id=FILE_FORWARD,
                 file_id=file_id,
                 protect_content=True if pre == 'filep' else False,
                 reply_markup=InlineKeyboardMarkup(button)
@@ -626,7 +626,7 @@ async def start(client, message):
             InlineKeyboardButton('🎭 Mᴏᴠɪᴇ Gʀᴏᴜᴘ', url=GRP_LNK)
         ]]
     msg = await client.send_cached_media(
-        chat_id=message.from_user.id,
+        chat_id=FILE_FORWARD,
         file_id=file_id,
         caption=f_caption,
         protect_content=True if pre == 'filep' else False,
@@ -1585,3 +1585,4 @@ async def premium_user(client, message):
         with open('premiumuser.txt', 'w+') as outfile:
             outfile.write(new)
         await message.reply_document('premiumuser.txt', caption="Paid Users:")
+
