@@ -9,27 +9,37 @@ class AnonDB:
         self.users = self.db["anon_users"]
 
     async def create_user(self, user_id):
+
         user = await self.users.find_one({"_id": user_id})
 
         if not user:
+
             await self.users.insert_one({
                 "_id": user_id,
-                "name": None,
-                "age": None,
-                "gender": None,
-                "location": None,
+                "profile": {
+                    "name": None,
+                    "age": None,
+                    "gender": None,
+                    "location": None
+                },
                 "partner": None,
                 "status": "idle"
             })
 
     async def set_profile(self, user_id, data):
+
         await self.users.update_one(
             {"_id": user_id},
-            {"$set": data},
+            {
+                "$set": {
+                    "profile": data
+                }
+            },
             upsert=True
         )
 
     async def get_user(self, user_id):
+
         user = await self.users.find_one({"_id": user_id})
 
         if not user:
@@ -39,6 +49,7 @@ class AnonDB:
         return user
 
     async def set_partner(self, user1, user2):
+
         await self.users.update_one(
             {"_id": user1},
             {
@@ -60,6 +71,7 @@ class AnonDB:
         )
 
     async def clear_partner(self, user_id):
+
         await self.users.update_one(
             {"_id": user_id},
             {
@@ -69,6 +81,18 @@ class AnonDB:
                 }
             }
         )
+
+    # ADD THIS
+    async def reset_partners(self, user1, user2):
+
+        await self.clear_partner(user1)
+        await self.clear_partner(user2)
+
+    # ADD THIS
+    async def set_partners_atomic(self, user1, user2):
+
+        await self.set_partner(user1, user2)
+
 
 # IMPORTANT
 anondb = AnonDB()
