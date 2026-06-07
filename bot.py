@@ -5,6 +5,7 @@ import logging
 import logging.config
 import pytz
 import asyncio
+from pyromod import listen
 from pathlib import Path
 
 # Get logging configurations
