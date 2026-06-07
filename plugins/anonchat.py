@@ -6,8 +6,7 @@ from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.errors import FloodWait, UserIsBlocked
 
-from database.users import db
-
+from database.anondb import anondb
 # ---------------- CONFIG ---------------- #
 
 SEARCH_TIMEOUT = 120
