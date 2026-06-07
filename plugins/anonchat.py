@@ -7,6 +7,7 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.errors import FloodWait, UserIsBlocked
 
 from database.anondb import anondb
+
 # ---------------- CONFIG ---------------- #
 
 SEARCH_TIMEOUT = 120
@@ -24,22 +25,6 @@ profile_data = {}
 
 waiting_lock = asyncio.Lock()
 
-# ---------------- START ---------------- #
-
-START_TEXT = """
-Anonymous Chat Feature
-
-You can chat anonymously with random users.
-
-Commands:
-
-/search - Find partner
-/next - Next partner
-/end - End chat
-/profile - Create profile
-/myprofile - View profile
-"""
-
 # ---------------- PROFILE COMMAND ---------------- #
 
 @Client.on_message(filters.private & filters.command("profile"))
@@ -47,13 +32,11 @@ async def profile_cmd(client, message):
 
     user_id = message.from_user.id
 
-    user = await db.get_user(user_id)
+    user = await anondb.get_user(user_id)
 
-    profile = user.get("profile", {}) if user else {}
-
-    if profile.get("name"):
+    if user.get("name"):
         return await message.reply_text(
-            "✅ Your profile is already completed."
+            "Your profile is already completed."
         )
 
     profile_states[user_id] = "name"
@@ -147,23 +130,21 @@ async def profile_handler(client, message):
 
         profile_data[user_id]["location"] = text
 
-        user = await db.get_user(user_id)
-
-        profile = user.get("profile", {}) if user else {}
-
-        profile.update(profile_data[user_id])
-
-        await db.add_user(
+        await anondb.set_profile(
             user_id,
-            profile,
-            user_type="user"
+            {
+                "name": profile_data[user_id]["name"],
+                "age": profile_data[user_id]["age"],
+                "gender": profile_data[user_id]["gender"],
+                "location": profile_data[user_id]["location"]
+            }
         )
 
         profile_states.pop(user_id, None)
         profile_data.pop(user_id, None)
 
         await message.reply_text(
-            "✅ Profile completed.\n\nUse /search to find partner."
+            "Profile completed.\n\nUse /chat to find partner."
         )
 
 # ---------------- GENDER CALLBACK ---------------- #
@@ -197,11 +178,9 @@ async def myprofile(client, message):
 
     user_id = message.from_user.id
 
-    user = await db.get_user(user_id)
+    user = await anondb.get_user(user_id)
 
-    profile = user.get("profile", {}) if user else {}
-
-    if not profile.get("name"):
+    if not user.get("name"):
         return await message.reply_text(
             "You have not created profile yet.\nUse /profile"
         )
@@ -209,48 +188,13 @@ async def myprofile(client, message):
     text = f"""
 Your Profile
 
-Name : {profile.get('name')}
-Age : {profile.get('age')}
-Gender : {profile.get('gender')}
-Location : {profile.get('location')}
+Name : {user.get('name')}
+Age : {user.get('age')}
+Gender : {user.get('gender')}
+Location : {user.get('location')}
 """
 
     await message.reply_text(text)
-
-# ---------------- START ---------------- #
-
-@Client.on_message(filters.private & filters.command("start"))
-async def start(client, message):
-
-    user_id = message.from_user.id
-
-    user = await db.get_user(user_id)
-
-    if not user:
-        await db.add_user(
-            user_id,
-            {
-                "name": "",
-                "age": "",
-                "gender": "",
-                "location": ""
-            },
-            user_type="user"
-        )
-
-    buttons = InlineKeyboardMarkup([
-        [
-            InlineKeyboardButton(
-                "Start Anonymous Chat",
-                callback_data="start_anon"
-            )
-        ]
-    ])
-
-    await message.reply_text(
-        START_TEXT,
-        reply_markup=buttons
-    )
 
 # ---------------- START BUTTON ---------------- #
 
@@ -259,32 +203,28 @@ async def start_anon(client, query):
 
     user_id = query.from_user.id
 
-    user = await db.get_user(user_id)
+    user = await anondb.get_user(user_id)
 
-    profile = user.get("profile", {}) if user else {}
-
-    if not profile.get("name"):
+    if not user.get("name"):
 
         return await query.message.reply_text(
             "Please create your profile first using /profile"
         )
 
     await query.message.reply_text(
-        "Use /search to find a partner."
+        "Use /chat to find a partner."
     )
 
 # ---------------- SEARCH ---------------- #
 
-@Client.on_message(filters.private & filters.command("search"))
+@Client.on_message(filters.private & filters.command("chat"))
 async def search_partner(client, message):
 
     user_id = message.from_user.id
 
-    user = await db.get_user(user_id)
+    user = await anondb.get_user(user_id)
 
-    profile = user.get("profile", {}) if user else {}
-
-    if not profile.get("name"):
+    if not user.get("name"):
         return await message.reply_text(
             "Complete profile first using /profile"
         )
@@ -307,8 +247,6 @@ async def search_partner(client, message):
             "Searching for partner..."
         )
 
-        # ---------- SEARCH TIMEOUT ---------- #
-
         async def timeout_task():
 
             await asyncio.sleep(SEARCH_TIMEOUT)
@@ -328,7 +266,7 @@ async def search_partner(client, message):
             timeout_task()
         )
 
-        # ---------- PAIR USERS ---------- #
+        # ---------- PAIR ---------- #
 
         if len(waiting_users) >= 2:
 
@@ -338,8 +276,6 @@ async def search_partner(client, message):
             if user1 == user2:
                 waiting_users.add(user1)
                 return
-
-            # cancel timeout
 
             if user1 in search_tasks:
                 search_tasks[user1].cancel()
@@ -353,33 +289,27 @@ async def search_partner(client, message):
             chat_timers[user1] = datetime.utcnow()
             chat_timers[user2] = datetime.utcnow()
 
-            try:
-                await db.set_partners_atomic(user1, user2)
-            except Exception:
-                pass
+            await anondb.set_partner(user1, user2)
 
-            u1 = await db.get_user(user1)
-            u2 = await db.get_user(user2)
-
-            p1 = u1.get("profile", {})
-            p2 = u2.get("profile", {})
+            u1 = await anondb.get_user(user1)
+            u2 = await anondb.get_user(user2)
 
             text1 = f"""
 Partner connected
 
-Name : {p2.get('name')}
-Age : {p2.get('age')}
-Gender : {p2.get('gender')}
-Location : {p2.get('location')}
+Name : {u2.get('name')}
+Age : {u2.get('age')}
+Gender : {u2.get('gender')}
+Location : {u2.get('location')}
 """
 
             text2 = f"""
 Partner connected
 
-Name : {p1.get('name')}
-Age : {p1.get('age')}
-Gender : {p1.get('gender')}
-Location : {p1.get('location')}
+Name : {u1.get('name')}
+Age : {u1.get('age')}
+Gender : {u1.get('gender')}
+Location : {u1.get('location')}
 """
 
             buttons = InlineKeyboardMarkup([
@@ -396,6 +326,7 @@ Location : {p1.get('location')}
             ])
 
             try:
+
                 await client.send_message(
                     user1,
                     text1,
@@ -409,7 +340,6 @@ Location : {p1.get('location')}
                 )
 
             except Exception as e:
-
                 print(f"[SEARCH ERROR] {e}")
 
 # ---------------- NEXT CALLBACK ---------------- #
@@ -422,7 +352,6 @@ async def next_callback(client, query):
     partner = sessions.pop(user_id, None)
 
     if not partner:
-
         return await query.message.reply_text(
             "You are not connected."
         )
@@ -432,10 +361,8 @@ async def next_callback(client, query):
     chat_timers.pop(user_id, None)
     chat_timers.pop(partner, None)
 
-    try:
-        await db.reset_partners(user_id, partner)
-    except Exception:
-        pass
+    await anondb.clear_partner(user_id)
+    await anondb.clear_partner(partner)
 
     try:
         await client.send_message(
@@ -450,10 +377,7 @@ async def next_callback(client, query):
         "Searching next partner..."
     )
 
-    fake_message = query.message
-    fake_message.from_user = query.from_user
-
-    await search_partner(client, fake_message)
+    await search_partner(client, query.message)
 
 # ---------------- END CALLBACK ---------------- #
 
@@ -465,7 +389,6 @@ async def end_callback(client, query):
     partner = sessions.pop(user_id, None)
 
     if not partner:
-
         return await query.message.reply_text(
             "You are not connected."
         )
@@ -475,10 +398,8 @@ async def end_callback(client, query):
     chat_timers.pop(user_id, None)
     chat_timers.pop(partner, None)
 
-    try:
-        await db.reset_partners(user_id, partner)
-    except Exception:
-        pass
+    await anondb.clear_partner(user_id)
+    await anondb.clear_partner(partner)
 
     await client.send_message(
         user_id,
@@ -512,10 +433,8 @@ async def next_command(client, message):
     chat_timers.pop(user_id, None)
     chat_timers.pop(partner, None)
 
-    try:
-        await db.reset_partners(user_id, partner)
-    except Exception:
-        pass
+    await anondb.clear_partner(user_id)
+    await anondb.clear_partner(partner)
 
     try:
         await client.send_message(
@@ -550,10 +469,8 @@ async def end_chat(client, message):
     chat_timers.pop(user_id, None)
     chat_timers.pop(partner, None)
 
-    try:
-        await db.reset_partners(user_id, partner)
-    except Exception:
-        pass
+    await anondb.clear_partner(user_id)
+    await anondb.clear_partner(partner)
 
     await message.reply_text(
         "Chat ended."
@@ -627,6 +544,7 @@ async def idle_checker(client):
                     if partner:
 
                         try:
+
                             await client.send_message(
                                 user_id,
                                 "Chat ended due to inactivity."
@@ -646,13 +564,8 @@ async def idle_checker(client):
                         chat_timers.pop(user_id, None)
                         chat_timers.pop(partner, None)
 
-                        try:
-                            await db.reset_partners(
-                                user_id,
-                                partner
-                            )
-                        except Exception:
-                            pass
+                        await anondb.clear_partner(user_id)
+                        await anondb.clear_partner(partner)
 
             except Exception as e:
                 print(f"[IDLE ERROR] {e}")
