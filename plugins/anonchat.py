@@ -1,7 +1,9 @@
 import random
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from database.anondb import db
+
+# CHANGE THIS ONLY
+from database.anondb import anondb
 
 waiting_users = []
 profile_states = {}
@@ -30,9 +32,9 @@ async def start(client, message):
 
     user_id = message.from_user.id
 
-    await db.create_user(user_id)
+    await anondb.create_user(user_id)
 
-    user = await db.get_user(user_id)
+    user = await anondb.get_user(user_id)
 
     buttons = InlineKeyboardMarkup([
         [
@@ -43,7 +45,6 @@ async def start(client, message):
         ]
     ])
 
-    # Existing welcome iruntha athuku keela add pannalam
     await message.reply_text(
         START_TEXT,
         reply_markup=buttons
@@ -63,7 +64,7 @@ async def start_anon(client, query):
 
     user_id = query.from_user.id
 
-    user = await db.get_user(user_id)
+    user = await anondb.get_user(user_id)
 
     if not user.get("name"):
         await query.message.reply_text(
@@ -134,7 +135,7 @@ async def profile_handler(client, message):
 
         profile_data[user_id]["location"] = text
 
-        await db.set_profile(
+        await anondb.set_profile(
             user_id,
             profile_data[user_id]
         )
@@ -170,7 +171,7 @@ async def search_partner(client, message):
 
     user_id = message.from_user.id
 
-    user = await db.get_user(user_id)
+    user = await anondb.get_user(user_id)
 
     if not user.get("name"):
         return await message.reply_text(
@@ -201,10 +202,10 @@ async def search_partner(client, message):
         sessions[user1] = user2
         sessions[user2] = user1
 
-        await db.set_partner(user1, user2)
+        await anondb.set_partner(user1, user2)
 
-        u1 = await db.get_user(user1)
-        u2 = await db.get_user(user2)
+        u1 = await anondb.get_user(user1)
+        u2 = await anondb.get_user(user2)
 
         txt1 = f"""
 🎉 Partner Connected
@@ -244,8 +245,8 @@ async def next_chat(client, message):
     sessions.pop(user_id, None)
     sessions.pop(partner, None)
 
-    await db.clear_partner(user_id)
-    await db.clear_partner(partner)
+    await anondb.clear_partner(user_id)
+    await anondb.clear_partner(partner)
 
     await client.send_message(
         partner,
@@ -275,8 +276,8 @@ async def end_chat(client, message):
     sessions.pop(user_id, None)
     sessions.pop(partner, None)
 
-    await db.clear_partner(user_id)
-    await db.clear_partner(partner)
+    await anondb.clear_partner(user_id)
+    await anondb.clear_partner(partner)
 
     await message.reply_text(
         "❌ Chat ended"
