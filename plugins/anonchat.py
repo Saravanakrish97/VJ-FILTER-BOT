@@ -32,6 +32,8 @@ async def profile_cmd(client, message):
 
     user_id = message.from_user.id
 
+    await anondb.create_user(user_id)
+
     user = await anondb.get_user(user_id)
 
     if user.get("name"):
@@ -178,6 +180,8 @@ async def myprofile(client, message):
 
     user_id = message.from_user.id
 
+    await anondb.create_user(user_id)
+
     user = await anondb.get_user(user_id)
 
     if not user.get("name"):
@@ -203,6 +207,8 @@ async def start_anon(client, query):
 
     user_id = query.from_user.id
 
+    await anondb.create_user(user_id)
+
     user = await anondb.get_user(user_id)
 
     if not user.get("name"):
@@ -221,6 +227,8 @@ async def start_anon(client, query):
 async def search_partner(client, message):
 
     user_id = message.from_user.id
+
+    await anondb.create_user(user_id)
 
     user = await anondb.get_user(user_id)
 
@@ -266,7 +274,7 @@ async def search_partner(client, message):
             timeout_task()
         )
 
-        # ---------- PAIR ---------- #
+        # ---------- PAIR USERS ---------- #
 
         if len(waiting_users) >= 2:
 
