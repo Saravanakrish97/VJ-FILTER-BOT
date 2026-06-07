@@ -30,17 +30,33 @@ class AnonDB:
         )
 
     async def get_user(self, user_id):
-        return await self.users.find_one({"_id": user_id})
+        user = await self.users.find_one({"_id": user_id})
+
+        if not user:
+            await self.create_user(user_id)
+            user = await self.users.find_one({"_id": user_id})
+
+        return user
 
     async def set_partner(self, user1, user2):
         await self.users.update_one(
             {"_id": user1},
-            {"$set": {"partner": user2, "status": "chatting"}}
+            {
+                "$set": {
+                    "partner": user2,
+                    "status": "chatting"
+                }
+            }
         )
 
         await self.users.update_one(
             {"_id": user2},
-            {"$set": {"partner": user1, "status": "chatting"}}
+            {
+                "$set": {
+                    "partner": user1,
+                    "status": "chatting"
+                }
+            }
         )
 
     async def clear_partner(self, user_id):
@@ -53,3 +69,6 @@ class AnonDB:
                 }
             }
         )
+
+# IMPORTANT
+anondb = AnonDB()
