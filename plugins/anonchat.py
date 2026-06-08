@@ -9,12 +9,18 @@ from pyrogram.raw.types import SendMessageTypingAction
 
 from database.anondb import anondb
 
-# ---------------- CONFIG ---------------- #
+from plugins.Extra.anonutils import (
+    send_new_user_log,
+    send_profile_complete_log,
+    send_pair_log,
+    send_next_log,
+    send_end_log,
+    send_anon_message_log,
+    relay_to_partner
+)
 
 SEARCH_TIMEOUT = 120
 IDLE_CHAT_LIMIT = 1800
-
-# ---------------- GLOBALS ---------------- #
 
 waiting_users = set()
 sessions = {}
@@ -26,20 +32,23 @@ profile_data = {}
 
 waiting_lock = asyncio.Lock()
 
-# ---------------- TYPING ---------------- #
+logged_users = set()
+
 
 async def send_typing(client, user_id):
+
     try:
+
         await client.invoke(
             SetTyping(
                 peer=await client.resolve_peer(user_id),
                 action=SendMessageTypingAction()
             )
         )
+
     except:
         pass
 
-# ---------------- PROFILE COMMAND ---------------- #
 
 @Client.on_message(filters.private & filters.command("profile"))
 async def profile_cmd(client, message):
@@ -47,18 +56,39 @@ async def profile_cmd(client, message):
     user_id = message.from_user.id
 
     await anondb.create_user(user_id)
+
+    if user_id not in logged_users:
+
+        await send_new_user_log(
+            client,
+            message.from_user
+        )
+
+        logged_users.add(user_id)
+
     user = await anondb.get_user(user_id)
 
     if user.get("profile", {}).get("name"):
-        return await message.reply_text("Your profile is already completed.")
+
+        return await message.reply_text(
+            """
+⚠️ உங்கள் profile ஏற்கனவே உருவாக்கப்பட்டுள்ளது
+
+Your profile is already completed.
+"""
+        )
 
     profile_states[user_id] = "name"
     profile_data[user_id] = {}
 
-    await message.reply_text("Send your name:")
+    await message.reply_text(
+        """
+👤 உங்கள் பெயரை அனுப்புங்கள்
 
+Send your name:
+"""
+    )
 
-# ---------------- PROFILE HANDLER ---------------- #
 
 @Client.on_message(filters.private, group=1)
 async def profile_handler(client, message):
@@ -72,61 +102,123 @@ async def profile_handler(client, message):
         return
 
     if not message.text:
-        return await message.reply_text("Please send text only.")
+
+        return await message.reply_text(
+            """
+⚠️ எழுத்து மட்டும் அனுப்பவும்
+
+Please send text only.
+"""
+        )
 
     text = message.text.strip()
+
     step = profile_states[user_id]
 
     if step == "name":
+
         profile_data[user_id]["name"] = text
+
         profile_states[user_id] = "age"
-        return await message.reply_text("Send your age:")
+
+        return await message.reply_text(
+            """
+🎂 உங்கள் வயதை அனுப்புங்கள்
+
+Send your age:
+"""
+        )
 
     elif step == "age":
 
         if not text.isdigit():
-            return await message.reply_text("Send valid age.")
+
+            return await message.reply_text(
+                """
+⚠️ சரியான வயதை அனுப்புங்கள்
+
+Send valid age.
+"""
+            )
 
         age = int(text)
 
         if age < 10 or age > 99:
-            return await message.reply_text("Age must be between 10 - 99.")
+
+            return await message.reply_text(
+                """
+⚠️ வயது 10 முதல் 99 வரை இருக்க வேண்டும்
+
+Age must be between 10 - 99.
+"""
+            )
 
         profile_data[user_id]["age"] = age
+
         profile_states[user_id] = "gender"
 
         buttons = InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("Male", callback_data="gender_male"),
-                InlineKeyboardButton("Female", callback_data="gender_female")
+                InlineKeyboardButton(
+                    "Male",
+                    callback_data="gender_male"
+                ),
+                InlineKeyboardButton(
+                    "Female",
+                    callback_data="gender_female"
+                )
             ],
             [
-                InlineKeyboardButton("Other", callback_data="gender_other")
+                InlineKeyboardButton(
+                    "Other",
+                    callback_data="gender_other"
+                )
             ]
         ])
 
-        return await message.reply_text("Select gender:", reply_markup=buttons)
+        return await message.reply_text(
+            """
+🚻 உங்கள் பாலினத்தை தேர்வு செய்யுங்கள்
+
+Select your gender:
+""",
+            reply_markup=buttons
+        )
 
     elif step == "location":
 
         profile_data[user_id]["location"] = text
 
-        await anondb.set_profile(user_id, {
-            "name": profile_data[user_id]["name"],
-            "age": profile_data[user_id]["age"],
-            "gender": profile_data[user_id]["gender"],
-            "location": profile_data[user_id]["location"]
-        })
+        await anondb.set_profile(
+            user_id,
+            {
+                "name": profile_data[user_id]["name"],
+                "age": profile_data[user_id]["age"],
+                "gender": profile_data[user_id]["gender"],
+                "location": profile_data[user_id]["location"]
+            }
+        )
 
         profile_states.pop(user_id, None)
         profile_data.pop(user_id, None)
 
-        return await message.reply_text(
-            "Profile completed.\n\nUse /chat to find partner."
+        await send_profile_complete_log(
+            client,
+            message.from_user
         )
 
+        return await message.reply_text(
+            """
+✅ உங்கள் profile வெற்றிகரமாக சேமிக்கப்பட்டது
 
-# ---------------- GENDER CALLBACK ---------------- #
+🔍 புதிய partner ஐ தேட /chat பயன்படுத்தவும்
+
+Your profile has been completed.
+
+Use /chat to find partner.
+"""
+        )
+
 
 @Client.on_callback_query(filters.regex("^gender_"))
 async def gender_callback(client, query):
@@ -137,71 +229,136 @@ async def gender_callback(client, query):
         return
 
     gender = query.data.split("_")[1]
+
     profile_data[user_id]["gender"] = gender.capitalize()
+
     profile_states[user_id] = "location"
 
-    await query.answer(f"{gender.capitalize()} selected")
-    await query.message.reply_text("Send your location:")
+    await query.answer(
+        f"{gender.capitalize()} selected"
+    )
 
+    await query.message.reply_text(
+        """
+📍 உங்கள் இருப்பிடத்தை அனுப்புங்கள்
 
-# ---------------- MY PROFILE ---------------- #
-
-@Client.on_message(filters.private & filters.command("myprofile"))
-async def myprofile(client, message):
-
-    user_id = message.from_user.id
-    user = await anondb.get_user(user_id)
-
-    if not user.get("profile", {}).get("name"):
-        return await message.reply_text("You have not created profile yet.\nUse /profile")
-
-    p = user["profile"]
-
-    text = f"""
-Your Profile
-
-Name : {p.get('name')}
-Age : {p.get('age')}
-Gender : {p.get('gender')}
-Location : {p.get('location')}
+Send your location:
 """
+    )
 
-    await message.reply_text(text)
-
-
-# ---------------- CHAT ---------------- #
 
 @Client.on_message(filters.private & filters.command("chat"))
 async def search_partner(client, message):
 
     user_id = message.from_user.id
+
     user = await anondb.get_user(user_id)
 
     if not user.get("profile", {}).get("name"):
-        return await message.reply_text("Complete profile first using /profile")
+
+        return await message.reply_text(
+            """
+⚠️ முதலில் profile உருவாக்கவும்
+
+Complete profile first using /profile
+"""
+        )
 
     async with waiting_lock:
 
         if user_id in sessions:
-            return await message.reply_text("You are already connected.")
+
+            return await message.reply_text(
+                """
+⚠️ நீங்கள் ஏற்கனவே ஒருவருடன் இணைக்கப்பட்டுள்ளீர்கள்
+
+You are already connected.
+"""
+            )
 
         if user_id in waiting_users:
-            return await message.reply_text("Already searching for partner...")
+
+            return await message.reply_text(
+                """
+⚠️ Partner தேடல் நடைபெற்று வருகிறது
+
+Already searching for partner...
+"""
+            )
 
         waiting_users.add(user_id)
 
-        search_msg = await message.reply_text("Searching for partner...")
+        remaining = SEARCH_TIMEOUT
 
-        async def timeout_task():
-            await asyncio.sleep(SEARCH_TIMEOUT)
-            if user_id in waiting_users:
-                waiting_users.discard(user_id)
+        search_msg = await message.reply_text(
+            f"""
+🔍 **புதிய partner தேடப்படுகிறது**
+
+⏱️ **மீதமுள்ள நேரம்:** 02:00
+
+⚠️ **தேடலை நிறுத்த /cancel பயன்படுத்தவும்**
+
+Searching for partner...
+"""
+        )
+
+        async def countdown():
+
+            nonlocal remaining
+
+            while remaining > 0:
+
+                if user_id not in waiting_users:
+                    return
+
+                mins = remaining // 60
+                secs = remaining % 60
+
                 try:
-                    await search_msg.edit_text("No partner found.\nTry again later.")
+
+                    dots = "." * ((remaining % 3) + 1)
+
+                    await search_msg.edit_text(
+                        f"""
+🔍 **புதிய partner தேடப்படுகிறது{dots}**
+
+⏱️ **மீதமுள்ள நேரம்:** {mins:02d}:{secs:02d}
+
+⚠️ **தேடலை நிறுத்த /cancel பயன்படுத்தவும்**
+
+Searching for partner...
+"""
+                    )
+
                 except:
                     pass
 
-        search_tasks[user_id] = asyncio.create_task(timeout_task())
+                await asyncio.sleep(1)
+
+                remaining -= 1
+
+            if user_id in waiting_users:
+
+                waiting_users.discard(user_id)
+
+                try:
+
+                    await search_msg.edit_text(
+                        """
+❌ **Partner கிடைக்கவில்லை**
+
+🔁 **சிறிது நேரம் கழித்து மீண்டும் முயற்சிக்கவும்**
+
+No partner found.
+"""
+                    )
+
+                except:
+                    pass
+
+        search_tasks[user_id] = asyncio.create_task(
+            countdown()
+        )
 
         if len(waiting_users) >= 2:
 
@@ -210,6 +367,7 @@ async def search_partner(client, message):
 
             if user1 in search_tasks:
                 search_tasks[user1].cancel()
+
             if user2 in search_tasks:
                 search_tasks[user2].cancel()
 
@@ -224,36 +382,285 @@ async def search_partner(client, message):
             u1 = await anondb.get_user(user1)
             u2 = await anondb.get_user(user2)
 
-            text1 = f"""
-Partner connected
+            user1_obj = await client.get_users(user1)
+            user2_obj = await client.get_users(user2)
 
-Name : {u2['profile']['name']}
-Age : {u2['profile']['age']}
-Gender : {u2['profile']['gender']}
-Location : {u2['profile']['location']}
+            await send_pair_log(
+                client,
+                user1_obj,
+                user2_obj
+            )
+
+            text1 = f"""
+💘 **Partner கிடைத்துள்ளார்**
+
+👤 பெயர் : {u2['profile']['name']}
+🎂 வயது : {u2['profile']['age']}
+🚻 பாலினம் : {u2['profile']['gender']}
+📍 இடம் : {u2['profile']['location']}
 """
 
             text2 = f"""
-Partner connected
+💘 **Partner கிடைத்துள்ளார்**
 
-Name : {u1['profile']['name']}
-Age : {u1['profile']['age']}
-Gender : {u1['profile']['gender']}
-Location : {u1['profile']['location']}
+👤 பெயர் : {u1['profile']['name']}
+🎂 வயது : {u1['profile']['age']}
+🚻 பாலினம் : {u1['profile']['gender']}
+📍 இடம் : {u1['profile']['location']}
 """
 
             buttons = InlineKeyboardMarkup([
                 [
-                    InlineKeyboardButton("Next", callback_data="anon_next"),
-                    InlineKeyboardButton("End", callback_data="anon_end")
+                    InlineKeyboardButton(
+                        "⏭ Next",
+                        callback_data="anon_next"
+                    ),
+                    InlineKeyboardButton(
+                        "❌ End",
+                        callback_data="anon_end"
+                    )
                 ]
             ])
 
-            await client.send_message(user1, text1, reply_markup=buttons)
-            await client.send_message(user2, text2, reply_markup=buttons)
+            await client.send_message(
+                user1,
+                text1,
+                reply_markup=buttons
+            )
+
+            await client.send_message(
+                user2,
+                text2,
+                reply_markup=buttons
+            )
 
 
-# ---------------- RELAY (🔥 TYPING ADDED) ---------------- #
+@Client.on_message(filters.private & filters.command("cancel"))
+async def cancel_search(client, message):
+
+    user_id = message.from_user.id
+
+    if user_id not in waiting_users:
+
+        return await message.reply_text(
+            """
+⚠️ தற்போது எந்த தேடலும் நடைபெறவில்லை
+
+You are not searching.
+"""
+        )
+
+    waiting_users.discard(user_id)
+
+    if user_id in search_tasks:
+        search_tasks[user_id].cancel()
+
+    await message.reply_text(
+        """
+❌ Partner தேடல் நிறுத்தப்பட்டது
+
+🔍 மீண்டும் தேட /chat பயன்படுத்தவும்
+
+Search cancelled.
+"""
+    )
+
+
+@Client.on_message(filters.private & filters.command("next"))
+async def next_command(client, message):
+
+    user_id = message.from_user.id
+
+    partner = sessions.get(user_id)
+
+    if not partner:
+
+        return await message.reply_text(
+            """
+⚠️ தற்போது எந்த partner உடனும் இணைக்கப்படவில்லை
+
+You are not connected with any partner.
+
+🔍 Use /chat to connect.
+"""
+        )
+
+    sessions.pop(user_id, None)
+    sessions.pop(partner, None)
+
+    await anondb.remove_partner(user_id)
+    await anondb.remove_partner(partner)
+
+    user1 = await client.get_users(user_id)
+    user2 = await client.get_users(partner)
+
+    await send_next_log(
+        client,
+        user1,
+        user2
+    )
+
+    await client.send_message(
+        partner,
+        """
+❌ உங்கள் partner chat ஐ விட்டு வெளியேறிவிட்டார்
+
+Partner left the chat.
+"""
+    )
+
+    await message.reply_text(
+        """
+⏭ புதிய partner தேடப்படுகிறது
+
+Searching for new partner...
+"""
+    )
+
+    await search_partner(client, message)
+
+
+@Client.on_message(filters.private & filters.command("end"))
+async def end_command(client, message):
+
+    user_id = message.from_user.id
+
+    partner = sessions.get(user_id)
+
+    if not partner:
+
+        return await message.reply_text(
+            """
+⚠️ தற்போது எந்த partner உடனும் இணைக்கப்படவில்லை
+
+You are not connected with any partner.
+
+🔍 Use /chat to connect.
+"""
+        )
+
+    sessions.pop(user_id, None)
+    sessions.pop(partner, None)
+
+    await anondb.remove_partner(user_id)
+    await anondb.remove_partner(partner)
+
+    user1 = await client.get_users(user_id)
+    user2 = await client.get_users(partner)
+
+    await send_end_log(
+        client,
+        user1,
+        user2
+    )
+
+    await client.send_message(
+        user_id,
+        """
+❌ உரையாடல் முடிந்தது
+
+Chat ended.
+"""
+    )
+
+    await client.send_message(
+        partner,
+        """
+❌ உங்கள் partner உரையாடலை முடித்துவிட்டார்
+
+Partner ended the chat.
+"""
+    )
+
+
+@Client.on_callback_query(filters.regex("^anon_next$"))
+async def anon_next_callback(client, query):
+
+    user_id = query.from_user.id
+
+    partner = sessions.get(user_id)
+
+    if not partner:
+
+        return await query.answer(
+            "⚠️ தற்போது எந்த partner உடனும் இணைக்கப்படவில்லை",
+            show_alert=True
+        )
+
+    sessions.pop(user_id, None)
+    sessions.pop(partner, None)
+
+    await anondb.remove_partner(user_id)
+    await anondb.remove_partner(partner)
+
+    user1 = await client.get_users(user_id)
+    user2 = await client.get_users(partner)
+
+    await send_next_log(
+        client,
+        user1,
+        user2
+    )
+
+    await client.send_message(
+        partner,
+        "❌ Partner left the chat."
+    )
+
+    await client.send_message(
+        user_id,
+        "⏭ Searching for new partner..."
+    )
+
+    fake_message = query.message
+    fake_message.from_user = query.from_user
+
+    await search_partner(client, fake_message)
+
+    await query.answer()
+
+
+@Client.on_callback_query(filters.regex("^anon_end$"))
+async def anon_end_callback(client, query):
+
+    user_id = query.from_user.id
+
+    partner = sessions.get(user_id)
+
+    if not partner:
+
+        return await query.answer(
+            "⚠️ தற்போது எந்த partner உடனும் இணைக்கப்படவில்லை",
+            show_alert=True
+        )
+
+    sessions.pop(user_id, None)
+    sessions.pop(partner, None)
+
+    await anondb.remove_partner(user_id)
+    await anondb.remove_partner(partner)
+
+    user1 = await client.get_users(user_id)
+    user2 = await client.get_users(partner)
+
+    await send_end_log(
+        client,
+        user1,
+        user2
+    )
+
+    await client.send_message(
+        user_id,
+        "❌ Chat ended."
+    )
+
+    await client.send_message(
+        partner,
+        "❌ Partner ended the chat."
+    )
+
+    await query.answer("Chat ended")
+
 
 @Client.on_message(filters.private, group=10)
 async def relay_messages(client, message):
@@ -267,6 +674,7 @@ async def relay_messages(client, message):
         return
 
     partner = sessions.get(user_id)
+
     if not partner:
         return
 
@@ -274,19 +682,34 @@ async def relay_messages(client, message):
     chat_timers[partner] = datetime.utcnow()
 
     try:
-        # 🔥 TYPING EFFECT
+
+        sender = await client.get_users(user_id)
+
+        await send_anon_message_log(
+            client,
+            sender,
+            message
+        )
+
         await send_typing(client, partner)
 
         await asyncio.sleep(1)
 
-        await message.copy(partner)
+        await relay_to_partner(
+            client,
+            message,
+            partner
+        )
 
     except FloodWait as e:
+
         await asyncio.sleep(e.value)
 
     except UserIsBlocked:
+
         sessions.pop(user_id, None)
         sessions.pop(partner, None)
 
     except Exception as e:
+
         print("[RELAY ERROR]", e)
