@@ -33,6 +33,7 @@ MELCOW_VID = environ.get("MELCOW_VID", "https://t.me/saravanakrish/107")
 SPELL_IMG = environ.get("SPELL_IMG", "https://graph.org/file/789e3888ab16ce1a9a535.jpg")
 
 # Admins, Channels & Users
+ANON_LOGS = int(environ.get('ANON_LOGS', '-1003039496181'))
 LOG_CHANNEL = int(environ.get('LOG_CHANNEL', '-1002062053288'))
 ADMINS = [int(admin) if id_pattern.search(admin) else admin for admin in environ.get('ADMINS', '2063915639 2100936996 1902515282 5932230962').split()]
 CHANNELS = [int(ch) if id_pattern.search(ch) else ch for ch in environ.get('CHANNELS', '-1001575521444 -1001831261465 -1002109559685 -1002134479029 -1002225923778 -1002068765207').split()]
