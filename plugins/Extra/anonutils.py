@@ -10,11 +10,11 @@ def clickable_mention(user):
 async def send_new_user_log(client, user):
 
     text = f"""
-🆕 **புதிய பயனர் இணைந்துள்ளார்**
+🆕 புதிய பயனர் இணைந்துள்ளார்
 
-👤 **User:** {clickable_mention(user)}
-🆔 **User ID:** `{user.id}`
-📝 **Username:** @{user.username if user.username else 'No Username'}
+👤 User: {clickable_mention(user)}
+🆔 User ID: `{user.id}`
+📝 Username: @{user.username if user.username else 'No Username'}
 """
 
     await client.send_message(
@@ -27,11 +27,11 @@ async def send_new_user_log(client, user):
 async def send_profile_complete_log(client, user):
 
     text = f"""
-✅ **Profile Completed**
+✅ Profile Completed
 
-👤 **User:** {clickable_mention(user)}
-🆔 **User ID:** `{user.id}`
-📝 **Username:** @{user.username if user.username else 'No Username'}
+👤 User: {clickable_mention(user)}
+🆔 User ID: `{user.id}`
+📝 Username: @{user.username if user.username else 'No Username'}
 """
 
     await client.send_message(
@@ -44,10 +44,10 @@ async def send_profile_complete_log(client, user):
 async def send_pair_log(client, user1, user2):
 
     text = f"""
-🤝 **புதிய இணைப்பு உருவாக்கப்பட்டது**
+🤝 புதிய இணைப்பு உருவாக்கப்பட்டது
 
-👤 **User 1:** {clickable_mention(user1)} `[ID: {user1.id}]`
-👤 **User 2:** {clickable_mention(user2)} `[ID: {user2.id}]`
+👤 User 1: {clickable_mention(user1)} `[ID: {user1.id}]`
+👤 User 2: {clickable_mention(user2)} `[ID: {user2.id}]`
 """
 
     await client.send_message(
@@ -60,10 +60,10 @@ async def send_pair_log(client, user1, user2):
 async def send_next_log(client, user1, user2):
 
     text = f"""
-⏭ **Partner மாற்றப்பட்டது**
+⏭ Partner மாற்றப்பட்டது
 
-👤 **User:** {clickable_mention(user1)} `[ID: {user1.id}]`
-👤 **Previous Partner:** {clickable_mention(user2)} `[ID: {user2.id}]`
+👤 User: {clickable_mention(user1)} `[ID: {user1.id}]`
+👤 Previous Partner: {clickable_mention(user2)} `[ID: {user2.id}]`
 """
 
     await client.send_message(
@@ -76,10 +76,10 @@ async def send_next_log(client, user1, user2):
 async def send_end_log(client, user1, user2):
 
     text = f"""
-🔌 **உரையாடல் முடிந்தது**
+🔌 உரையாடல் முடிந்தது
 
-👤 **User:** {clickable_mention(user1)} `[ID: {user1.id}]`
-👤 **Partner:** {clickable_mention(user2)} `[ID: {user2.id}]`
+👤 User: {clickable_mention(user1)} `[ID: {user1.id}]`
+👤 Partner: {clickable_mention(user2)} `[ID: {user2.id}]`
 """
 
     await client.send_message(
