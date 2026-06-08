@@ -1,7 +1,3 @@
-# Don't Remove Credit @TamilBots
-# Subscribe YouTube Channel For Amazing Bot @Tamilbots
-# Ask Doubt on telegram @TamilSupport
-
 import logging
 import asyncio
 import re
@@ -27,6 +23,25 @@ logger.setLevel(logging.INFO)
 lock = asyncio.Lock()
 
 
+# ---------------------------
+# SAFE EDIT HELPER (FIX)
+# ---------------------------
+async def safe_edit(bot, msg, text, reply_markup=None):
+    try:
+        return await bot.edit_message_text(
+            chat_id=msg.chat.id,
+            message_id=msg.id,
+            text=text,
+            reply_markup=reply_markup
+        )
+    except Exception as e:
+        logger.warning(f"Edit failed: {e}")
+        return None
+
+
+# ---------------------------
+# CALLBACK INDEX HANDLER
+# ---------------------------
 @Client.on_callback_query(filters.regex(r'^index'))
 async def index_files(bot, query):
 
@@ -53,22 +68,19 @@ async def index_files(bot, query):
         )
 
     msg = query.message
-
     await query.answer('Processing...⏳', show_alert=True)
 
-    if int(from_user) not in ADMINS:
-        await bot.send_message(
-            int(from_user),
-            f'Your Submission for indexing {chat} has been accepted.',
-            reply_to_message_id=int(lst_msg_id)
+    try:
+        await safe_edit(
+            bot,
+            msg,
+            "Starting Indexing...",
+            reply_markup=InlineKeyboardMarkup(
+                [[InlineKeyboardButton('Cancel', callback_data='index_cancel')]]
+            )
         )
-
-    await msg.edit(
-        "Starting Indexing",
-        reply_markup=InlineKeyboardMarkup(
-            [[InlineKeyboardButton('Cancel', callback_data='index_cancel')]]
-        )
-    )
+    except Exception:
+        pass
 
     try:
         chat = int(chat)
@@ -78,6 +90,9 @@ async def index_files(bot, query):
     await index_files_to_db(int(lst_msg_id), chat, msg, bot)
 
 
+# ---------------------------
+# USER INDEX REQUEST
+# ---------------------------
 @Client.on_message(filters.private & filters.command('index'))
 async def send_for_index(bot, message):
 
@@ -89,7 +104,6 @@ async def send_for_index(bot, message):
     chat_id = None
     last_msg_id = None
 
-    # LINK METHOD
     if ask.text:
 
         regex = re.compile(
@@ -99,9 +113,7 @@ async def send_for_index(bot, message):
         match = regex.match(ask.text)
 
         if not match:
-            return await ask.reply(
-                "Invalid link\n\nTry again using /index"
-            )
+            return await ask.reply("Invalid link\n\nTry again using /index")
 
         chat_id = match.group(4)
         last_msg_id = int(match.group(5))
@@ -109,90 +121,26 @@ async def send_for_index(bot, message):
         if str(chat_id).isnumeric():
             chat_id = int("-100" + str(chat_id))
 
-    # FORWARDED MESSAGE METHOD
     elif ask.forward_from_chat:
 
         if ask.forward_from_chat.type != enums.ChatType.CHANNEL:
             return await ask.reply("Forward message must be from channel.")
 
         last_msg_id = ask.forward_from_message_id
-
-        chat_id = (
-            ask.forward_from_chat.username
-            or ask.forward_from_chat.id
-        )
+        chat_id = ask.forward_from_chat.username or ask.forward_from_chat.id
 
     else:
         return await ask.reply("Invalid input.")
 
-    # CHECK CHAT
     try:
         await bot.get_chat(chat_id)
-
-    except ChannelInvalid:
-        return await ask.reply(
-            'Private channel/group detected.\n'
-            'Make me admin there.'
-        )
-
-    except (UsernameInvalid, UsernameNotModified):
-        return await ask.reply('Invalid link specified.')
-
     except Exception as e:
-        logger.exception(e)
-        return await ask.reply(f'Error:\n{e}')
+        return await ask.reply(f'Error: {e}')
 
-    # CHECK LAST MESSAGE
     try:
-        k = await bot.get_messages(chat_id, last_msg_id)
-
+        await bot.get_messages(chat_id, last_msg_id)
     except Exception as e:
-        return await ask.reply(
-            'Make sure I am admin in the channel.\n\n'
-            f'Error: {e}'
-        )
-
-    if not k:
-        return await ask.reply("Message not found.")
-
-    # ADMIN DIRECT INDEX
-    if message.from_user.id in ADMINS:
-
-        buttons = [[
-            InlineKeyboardButton(
-                'Yes',
-                callback_data=f'index#accept#{chat_id}#{last_msg_id}#{message.from_user.id}'
-            )
-        ],
-        [
-            InlineKeyboardButton(
-                'Close',
-                callback_data='close_data'
-            )
-        ]]
-
-        return await message.reply(
-            f'Do you want to index this?\n\n'
-            f'Chat: <code>{chat_id}</code>\n'
-            f'Last Msg ID: <code>{last_msg_id}</code>',
-            reply_markup=InlineKeyboardMarkup(buttons)
-        )
-
-    # NORMAL USER REQUEST
-    if isinstance(chat_id, int):
-
-        try:
-            link = (
-                await bot.create_chat_invite_link(chat_id)
-            ).invite_link
-
-        except ChatAdminRequired:
-            return await message.reply(
-                'Make me admin with invite permission.'
-            )
-
-    else:
-        link = f"https://t.me/{chat_id}"
+        return await ask.reply(f'Make sure bot has access.\nError: {e}')
 
     buttons = [
         [
@@ -212,19 +160,18 @@ async def send_for_index(bot, message):
     await bot.send_message(
         LOG_CHANNEL,
         f'#IndexRequest\n\n'
-        f'By : {message.from_user.mention} '
-        f'(<code>{message.from_user.id}</code>)\n\n'
+        f'By : {message.from_user.mention}\n'
         f'Chat : <code>{chat_id}</code>\n'
-        f'Last Msg ID : <code>{last_msg_id}</code>\n'
-        f'Invite : {link}',
+        f'Last Msg ID : <code>{last_msg_id}</code>',
         reply_markup=InlineKeyboardMarkup(buttons)
     )
 
-    await message.reply(
-        'Thank you.\nWait for moderators approval.'
-    )
+    await message.reply("Thank you. Wait for approval.")
 
 
+# ---------------------------
+# SKIP SET
+# ---------------------------
 @Client.on_message(filters.command('setskip') & filters.user(ADMINS))
 async def set_skip_number(bot, message):
 
@@ -233,19 +180,17 @@ async def set_skip_number(bot, message):
 
     try:
         skip = int(message.command[1])
-
     except:
-        return await message.reply(
-            "Skip number should be integer."
-        )
+        return await message.reply("Skip must be integer")
 
     temp.CURRENT = skip
 
-    await message.reply(
-        f"Successfully set SKIP number as {skip}"
-    )
+    await message.reply(f"Skip set to {skip}")
 
 
+# ---------------------------
+# MAIN INDEXER
+# ---------------------------
 async def index_files_to_db(lst_msg_id, chat, msg, bot):
 
     total_files = 0
@@ -257,111 +202,81 @@ async def index_files_to_db(lst_msg_id, chat, msg, bot):
 
     async with lock:
 
+        temp.CANCEL = False
+        current = temp.CURRENT
+
         try:
 
-            current = temp.CURRENT
-            temp.CANCEL = False
-
-            async for message in bot.iter_messages(
-                chat,
-                lst_msg_id,
-                temp.CURRENT
-            ):
+            while current <= lst_msg_id:
 
                 if temp.CANCEL:
-
-                    return await msg.edit(
-                        f"Cancelled\n\n"
-                        f"Saved: <code>{total_files}</code>\n"
-                        f"Duplicate: <code>{duplicate}</code>\n"
-                        f"Deleted: <code>{deleted}</code>\n"
-                        f"No Media: <code>{no_media}</code>\n"
-                        f"Unsupported: <code>{unsupported}</code>\n"
-                        f"Errors: <code>{errors}</code>"
+                    return await safe_edit(
+                        bot, msg,
+                        f"Cancelled\nSaved: {total_files}\nDuplicate: {duplicate}\nDeleted: {deleted}"
                     )
 
-                current += 1
+                try:
+                    messages = await bot.get_messages(chat, list(range(current, current + 200)))
+                except FloodWait as e:
+                    await asyncio.sleep(e.value)
+                    continue
+                except Exception as e:
+                    logger.error(e)
+                    current += 200
+                    continue
 
-                if current % 60 == 0:
+                for message in messages:
 
-                    await asyncio.sleep(2)
+                    if temp.CANCEL:
+                        break
 
-                    await msg.edit_text(
-                        text=(
-                            f"Fetched: <code>{current}</code>\n"
-                            f"Saved: <code>{total_files}</code>\n"
-                            f"Duplicate: <code>{duplicate}</code>\n"
-                            f"Deleted: <code>{deleted}</code>\n"
-                            f"No Media: <code>{no_media}</code>\n"
-                            f"Unsupported: <code>{unsupported}</code>\n"
-                            f"Errors: <code>{errors}</code>"
-                        ),
-                        reply_markup=InlineKeyboardMarkup(
-                            [[
-                                InlineKeyboardButton(
-                                    'Cancel',
-                                    callback_data='index_cancel'
-                                )
-                            ]]
-                        )
+                    if not message or message.empty:
+                        deleted += 1
+                        continue
+
+                    media = (
+                        message.video or
+                        message.audio or
+                        message.document or
+                        message.photo or
+                        message.animation
                     )
 
-                if message.empty:
-                    deleted += 1
-                    continue
+                    if not media:
+                        no_media += 1
+                        continue
 
-                if not message.media:
-                    no_media += 1
-                    continue
+                    try:
+                        saved, result = await save_file(media)
 
-                if message.media not in [
-                    enums.MessageMediaType.VIDEO,
-                    enums.MessageMediaType.AUDIO,
-                    enums.MessageMediaType.DOCUMENT
-                ]:
-                    unsupported += 1
-                    continue
+                        if saved:
+                            total_files += 1
+                        elif result == 0:
+                            duplicate += 1
+                        else:
+                            errors += 1
 
-                media = getattr(
-                    message,
-                    message.media.value,
-                    None
-                )
+                    except Exception as e:
+                        logger.error(e)
+                        errors += 1
 
-                if not media:
-                    unsupported += 1
-                    continue
+                current += 200
+                temp.CURRENT = current
 
-                media.file_type = message.media.value
-                media.caption = message.caption
+                # SAFE progress update
+                if current % 1000 == 0:
+                    await safe_edit(
+                        bot,
+                        msg,
+                        f"Indexing...\nFetched: {current}\nSaved: {total_files}\nDeleted: {deleted}"
+                    )
 
-                saved, result = await save_file(media)
-
-                if saved:
-                    total_files += 1
-
-                elif result == 0:
-                    duplicate += 1
-
-                elif result == 2:
-                    errors += 1
-
-        except FloodWait as e:
-            await asyncio.sleep(e.value)
+            await safe_edit(
+                bot,
+                msg,
+                f"Completed\nSaved: {total_files}\nDuplicate: {duplicate}\nDeleted: {deleted}\nNoMedia: {no_media}"
+            )
 
         except Exception as e:
             logger.exception(e)
-
-            await msg.edit(f'Error:\n<code>{e}</code>')
-
-        else:
-
-            await msg.edit(
-                f'Successfully saved '
-                f'<code>{total_files}</code> files!\n\n'
-                f'Duplicate: <code>{duplicate}</code>\n'
-                f'Deleted: <code>{deleted}</code>\n'
-                f'No Media: <code>{no_media}</code>\n'
-                f'Unsupported: <code>{unsupported}</code>\n'
-                f'Errors: <code>{errors}</code>'
-            )
+            await safe_edit(bot, msg, f"Error:\n{e}")
