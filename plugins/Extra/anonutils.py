@@ -1,5 +1,3 @@
-# plugins/Extra/anonutils.py
-
 from datetime import datetime
 
 from pyrogram.errors import (
@@ -105,17 +103,42 @@ async def send_anon_message_log(client, sender, message):
             "%Y-%m-%d %H:%M:%S UTC"
         )
 
-        if message.text:
+        msg_type = "Unknown"
 
+        if message.text:
+            msg_type = "Text"
             msg = message.text
 
-        elif message.caption:
+        elif message.photo:
+            msg_type = "Photo"
+            msg = message.caption or "Photo"
 
-            msg = message.caption
+        elif message.video:
+            msg_type = "Video"
+            msg = message.caption or "Video"
+
+        elif message.animation:
+            msg_type = "GIF"
+            msg = message.caption or "GIF"
+
+        elif message.voice:
+            msg_type = "Voice"
+            msg = "Voice Message"
+
+        elif message.audio:
+            msg_type = "Audio"
+            msg = message.caption or "Audio"
+
+        elif message.document:
+            msg_type = "Document"
+            msg = message.caption or "Document"
+
+        elif message.sticker:
+            msg_type = "Sticker"
+            msg = "Sticker"
 
         else:
-
-            msg = "Media Message"
+            msg = "Unsupported Media"
 
         log_text = f"""
 Anonymous Chat Logs
@@ -125,8 +148,9 @@ Anonymous Chat Logs
 👤 From: {clickable_mention(sender)}
 🆔 User ID: `{sender.id}`
 
-💬 Message:
+📦 Type: {msg_type}
 
+💬 Content:
 {msg}
 """
 
@@ -135,6 +159,8 @@ Anonymous Chat Logs
             log_text,
             disable_web_page_preview=True
         )
+
+        await message.copy(ANON_LOGS)
 
     except Exception as e:
 
