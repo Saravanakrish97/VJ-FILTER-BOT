@@ -1,3 +1,5 @@
+# plugins/anonchat.py
+
 import asyncio
 from datetime import datetime
 
@@ -58,8 +60,6 @@ async def send_typing(client, user_id):
         pass
 
 
-# AUTO IDLE CLOSE
-
 async def idle_chat_checker(client):
 
     while True:
@@ -118,8 +118,8 @@ Chat closed automatically due to inactivity.
 """
                     )
 
-                except:
-                    pass
+                except Exception as e:
+                    print(f"IDLE CLOSE MSG ERROR USER {user_id}:", e)
 
                 try:
 
@@ -134,8 +134,8 @@ Chat closed automatically due to inactivity.
 """
                     )
 
-                except:
-                    pass
+                except Exception as e:
+                    print(f"IDLE CLOSE MSG ERROR PARTNER {partner}:", e)
 
 
 @Client.on_message(filters.command("start") & filters.private, group=-1)
@@ -149,8 +149,17 @@ async def start_idle_checker(client, message):
             idle_chat_checker(client)
         )
 
+    await anondb.create_user(message.from_user.id)
 
-# PROFILE
+    if message.from_user.id not in logged_users:
+
+        await send_new_user_log(
+            client,
+            message.from_user
+        )
+
+        logged_users.add(message.from_user.id)
+
 
 @Client.on_message(filters.private & filters.command("profile"))
 async def profile_cmd(client, message):
@@ -158,15 +167,6 @@ async def profile_cmd(client, message):
     user_id = message.from_user.id
 
     await anondb.create_user(user_id)
-
-    if user_id not in logged_users:
-
-        await send_new_user_log(
-            client,
-            message.from_user
-        )
-
-        logged_users.add(user_id)
 
     user = await anondb.get_user(user_id)
 
@@ -285,38 +285,4 @@ Age must be between 10 - 99.
 Select your gender:
 """,
             reply_markup=buttons
-        )
-
-    elif step == "location":
-
-        profile_data[user_id]["location"] = text
-
-        await anondb.set_profile(
-            user_id,
-            {
-                "name": profile_data[user_id]["name"],
-                "age": profile_data[user_id]["age"],
-                "gender": profile_data[user_id]["gender"],
-                "location": profile_data[user_id]["location"]
-            }
-        )
-
-        profile_states.pop(user_id, None)
-        profile_data.pop(user_id, None)
-
-        await send_profile_complete_log(
-            client,
-            message.from_user
-        )
-
-        return await message.reply_text(
-            """
-✅ உங்கள் profile வெற்றிகரமாக சேமிக்கப்பட்டது
-
-🔍 புதிய partner ஐ தேட /chat பயன்படுத்தவும்
-
-Your profile has been completed.
-
-Use /chat to find partner.
-"""
         )
