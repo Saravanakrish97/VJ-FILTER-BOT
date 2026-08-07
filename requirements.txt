@@ -68,3 +68,4 @@ https://codeload.github.com/KurimuzonAkuma/pyrogram/zip/refs/heads/dev
 sending
 
   
+urllib3>=2.5.0 # not directly required, pinned by Snyk to avoid a vulnerability
